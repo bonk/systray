@@ -12,6 +12,11 @@ import (
 	"github.com/getlantern/golog"
 )
 
+const NIIF_NONE    =  0x00000000
+const NIIF_INFO    =  0x00000001
+const NIIF_WARNING = 0x00000002
+const NIIF_ERROR   = 0x00000003
+
 var (
 	log = golog.LoggerFor("systray")
 

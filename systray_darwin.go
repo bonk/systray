@@ -10,6 +10,7 @@ import "C"
 
 import (
 	"unsafe"
+        "github.com/martinlindhe/notify"
 )
 
 // SetTemplateIcon sets the systray icon as a template icon (on Mac), falling back
@@ -35,4 +36,11 @@ func (item *MenuItem) SetIcon(iconBytes []byte) {
 func (item *MenuItem) SetTemplateIcon(templateIconBytes []byte, regularIconBytes []byte) {
 	cstr := (*C.char)(unsafe.Pointer(&templateIconBytes[0]))
 	C.setMenuItemIcon(cstr, (C.int)(len(templateIconBytes)), C.int(item.id), true)
+}
+
+// SetInfo sets the systray info balloon
+// only available on Mac and Windows.
+func SetInfo(appName string, text string, title string, timeout uint32, notificationType uint32) {
+        // show a notification
+	notify.Notify(appName, title, text, "")
 }

@@ -112,7 +112,7 @@ type notifyIconData struct {
 	Tip                        [128]uint16
 	State, StateMask           uint32
 	Info                       [256]uint16
-	Timeout, Version           uint32
+	TimeoutOrVersion           uint32
 	InfoTitle                  [64]uint16
 	InfoFlags                  uint32
 	GuidItem                   windows.GUID
@@ -128,6 +128,12 @@ func (nid *notifyIconData) add() error {
 	if res == 0 {
 		return err
 	}
+
+//        err = nid.setVersion()
+//	if err != nil {
+//		return err
+//	}
+
 	return nil
 }
 
@@ -147,6 +153,18 @@ func (nid *notifyIconData) delete() error {
 	const NIM_DELETE = 0x00000002
 	res, _, err := pShellNotifyIcon.Call(
 		uintptr(NIM_DELETE),
+		uintptr(unsafe.Pointer(nid)),
+	)
+	if res == 0 {
+		return err
+	}
+	return nil
+}
+
+func (nid *notifyIconData) setVersion() error {
+	const NIM_SETVERSION = 0x00000004
+	res, _, err := pShellNotifyIcon.Call(
+		uintptr(NIM_SETVERSION),
 		uintptr(unsafe.Pointer(nid)),
 	)
 	if res == 0 {
@@ -237,6 +255,31 @@ func (t *winTray) setTooltip(src string) error {
 	defer t.muNID.Unlock()
 	copy(t.nid.Tip[:], b[:])
 	t.nid.Flags |= NIF_TIP
+	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
+
+	return t.nid.modify()
+}
+
+// Sets info balloon on icon.
+// Shell_NotifyIcon: https://social.msdn.microsoft.com/Forums/en-US/0af102b3-5e2e-409b-a261-7ebdb6438252/displaying-tooltip-on-system-tray-notification?forum=vcgeneral
+func (t *winTray) setInfo(appName string, text string, title string, timeout uint32, notificationType uint32) error {
+	const NIF_INFO = 0x00000010
+	txt, err := windows.UTF16FromString(text)
+	if err != nil {
+		return err
+	}
+	titl, err := windows.UTF16FromString(title)
+	if err != nil {
+		return err
+	}
+
+	t.muNID.Lock()
+	defer t.muNID.Unlock()
+	copy(t.nid.Info[:], txt[:])
+	copy(t.nid.InfoTitle[:], titl[:])
+	t.nid.Flags = NIF_INFO
+	t.nid.InfoFlags = notificationType
+        t.nid.TimeoutOrVersion = timeout
 	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
 
 	return t.nid.modify()
@@ -427,6 +470,7 @@ func (t *winTray) initInstance() error {
 		ID:              100,
 		Flags:           NIF_MESSAGE,
 		CallbackMessage: t.wmSystrayMessage,
+//                TimeoutOrVersion: 3,
 	}
 	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
 
@@ -898,6 +942,15 @@ func (item *MenuItem) SetIcon(iconBytes []byte) {
 func SetTooltip(tooltip string) {
 	if err := wt.setTooltip(tooltip); err != nil {
 		log.Errorf("Unable to set tooltip: %v", err)
+		return
+	}
+}
+
+// SetInfo sets the systray info balloon
+// only available on Mac and Windows.
+func SetInfo(appName string, text string, title string, timeout uint32, notificationType uint32) {
+	if err := wt.setInfo(appName, text, title, timeout, notificationType); err != nil {
+		log.Errorf("Unable to set info balloon: %v", err)
 		return
 	}
 }
