@@ -129,11 +129,6 @@ func (nid *notifyIconData) add() error {
 		return err
 	}
 
-//        err = nid.setVersion()
-//	if err != nil {
-//		return err
-//	}
-
 	return nil
 }
 
@@ -153,18 +148,6 @@ func (nid *notifyIconData) delete() error {
 	const NIM_DELETE = 0x00000002
 	res, _, err := pShellNotifyIcon.Call(
 		uintptr(NIM_DELETE),
-		uintptr(unsafe.Pointer(nid)),
-	)
-	if res == 0 {
-		return err
-	}
-	return nil
-}
-
-func (nid *notifyIconData) setVersion() error {
-	const NIM_SETVERSION = 0x00000004
-	res, _, err := pShellNotifyIcon.Call(
-		uintptr(NIM_SETVERSION),
 		uintptr(unsafe.Pointer(nid)),
 	)
 	if res == 0 {
@@ -236,7 +219,7 @@ func (t *winTray) setIcon(src string) error {
 	t.muNID.Lock()
 	defer t.muNID.Unlock()
 	t.nid.Icon = h
-	t.nid.Flags |= NIF_ICON
+	t.nid.Flags = NIF_ICON
 	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
 
 	return t.nid.modify()
@@ -254,7 +237,7 @@ func (t *winTray) setTooltip(src string) error {
 	t.muNID.Lock()
 	defer t.muNID.Unlock()
 	copy(t.nid.Tip[:], b[:])
-	t.nid.Flags |= NIF_TIP
+	t.nid.Flags = NIF_TIP
 	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
 
 	return t.nid.modify()
@@ -470,7 +453,6 @@ func (t *winTray) initInstance() error {
 		ID:              100,
 		Flags:           NIF_MESSAGE,
 		CallbackMessage: t.wmSystrayMessage,
-//                TimeoutOrVersion: 3,
 	}
 	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
 
