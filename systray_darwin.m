@@ -170,6 +170,11 @@ NSMenuItem *find_menu_item(NSMenu *ourMenu, NSNumber *menuId) {
   return NULL;
 };
 
+- (void) remove_all_items
+{
+  [menu removeAllItems];
+}
+
 - (void) add_separator:(NSNumber*) menuId
 {
   [menu addItem: [NSMenuItem separatorItem]];
@@ -271,6 +276,10 @@ void add_or_update_menu_item(int menuId, int parentMenuId, char* title, char* to
   free(title);
   free(tooltip);
   runInMainThread(@selector(add_or_update_menu_item:), (id)item);
+}
+
+void remove_all_items(void) {
+  runInMainThread(@selector(remove_all_items), nil);
 }
 
 void add_separator(int menuId) {

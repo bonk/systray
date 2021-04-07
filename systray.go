@@ -141,6 +141,12 @@ func AddSeparator() {
 	addSeparator(atomic.AddUint32(&currentID, 1))
 }
 
+//removes all menu items
+func Clean() {
+	menuItems = make(map[uint32]*MenuItem)
+	clean()
+}
+
 // AddSubMenuItem adds a nested sub-menu item with the designated title and tooltip.
 // It can be safely invoked from different goroutines.
 // Created menu items are checkable on Windows and OSX by default. For Linux you have to use AddSubMenuItemCheckbox
@@ -230,7 +236,7 @@ func systrayMenuItemSelected(id uint32) {
 	item, ok := menuItems[id]
 	menuItemsLock.RUnlock()
 	if !ok {
-		log.Errorf("No menu item with ID %v", id)
+		_ = log.Errorf("No menu item with ID %v", id)
 		return
 	}
 	select {

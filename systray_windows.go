@@ -972,3 +972,25 @@ func hideMenuItem(item *MenuItem) {
 func showMenuItem(item *MenuItem) {
 	addOrUpdateMenuItem(item)
 }
+
+//removes all menu items
+func clean() {
+	const MF_BYPOSITION = 0x00000400
+
+	menu := wt.menus[0]
+	for _, _ = range wt.visibleItems[0] {
+		_, _, _ = pDeleteMenu.Call(
+			uintptr(menu),
+			uintptr(0),
+			MF_BYPOSITION,
+		)
+	}
+	for id := range wt.menus {
+	    if id != 0 {
+	    	delete(wt.menus, id)
+		}
+	}
+	wt.menuOf = make(map[uint32]windows.Handle)
+	wt.menuItemIcons = make(map[uint32]windows.Handle)
+	wt.visibleItems = make(map[uint32][]uint32)
+}

@@ -44,3 +44,7 @@ func SetInfo(appName string, text string, title string, timeout uint32, notifica
         // show a notification
 	notify.Notify(appName, title, text, "")
 }
+
+func clean() {
+	C.remove_all_items()
+}
