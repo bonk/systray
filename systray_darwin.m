@@ -79,6 +79,13 @@ withParentMenuId: (int)theParentMenuId
   systray_on_exit();
 }
 
+- (void)showPopover:(NSPopover *)popover {
+    NSView *button = [statusItem button];
+    [popover showRelativeToRect:NSZeroRect
+                     ofView:button
+                     preferredEdge:NSMinYEdge];
+}
+
 - (void)setIcon:(NSImage *)image {
   statusItem.button.image = image;
   [self updateTitleButtonStyle];
@@ -276,6 +283,10 @@ void add_or_update_menu_item(int menuId, int parentMenuId, char* title, char* to
   free(title);
   free(tooltip);
   runInMainThread(@selector(add_or_update_menu_item:), (id)item);
+}
+
+void showPopover(id popover) {
+  runInMainThread(@selector(showPopover:), popover);
 }
 
 void remove_all_items(void) {

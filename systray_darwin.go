@@ -4,6 +4,7 @@ package systray
 #cgo darwin CFLAGS: -DDARWIN -x objective-c -fobjc-arc
 #cgo darwin LDFLAGS: -framework Cocoa -framework WebKit
 
+void showPopover(void *popover);
 #include "systray.h"
 */
 import "C"
@@ -47,4 +48,8 @@ func SetInfo(appName string, text string, title string, timeout uint32, notifica
 
 func clean() {
 	C.remove_all_items()
+}
+
+func ShowPopover(popover unsafe.Pointer) {
+	C.showPopover(popover)
 }
