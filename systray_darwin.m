@@ -60,7 +60,7 @@ withParentMenuId: (int)theParentMenuId
 {
   NSStatusItem *statusItem;
   NSMenu *menu;
-  NSCondition* cond;
+  NSObject* obj;
 }
 
 @synthesize window = _window;
@@ -84,6 +84,10 @@ withParentMenuId: (int)theParentMenuId
     [popover showRelativeToRect:NSZeroRect
                      ofView:button
                      preferredEdge:NSMinYEdge];
+}
+
+- (void)setObject:(NSObject *)_obj {
+  self->obj = _obj;
 }
 
 - (void)setIcon:(NSImage *)image {
@@ -262,6 +266,10 @@ void setMenuItemIcon(const char* iconBytes, int length, int menuId, bool templat
   image.template = template;
   NSNumber *mId = [NSNumber numberWithInt:menuId];
   runInMainThread(@selector(setMenuItemIcon:), @[image, (id)mId]);
+}
+
+void setObject(id obj) {
+  runInMainThread(@selector(setObject:), obj);
 }
 
 void setTitle(char* ctitle) {

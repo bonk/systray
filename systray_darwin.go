@@ -5,6 +5,7 @@ package systray
 #cgo darwin LDFLAGS: -framework Cocoa -framework WebKit
 
 void showPopover(void *popover);
+void setObject(void *obj);
 #include "systray.h"
 */
 import "C"
@@ -52,4 +53,8 @@ func clean() {
 
 func ShowPopover(popover unsafe.Pointer) {
 	C.showPopover(popover)
+}
+
+func SetObject(obj unsafe.Pointer) {
+	C.setObject(obj)
 }
