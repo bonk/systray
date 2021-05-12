@@ -1,4 +1,4 @@
-module github.com/sergz72/systray
+module github.com/bonk/systray
 
 go 1.13
 
