@@ -62,6 +62,8 @@ var (
 	pTranslateMessage      = u32.NewProc("TranslateMessage")
 	pUnregisterClass       = u32.NewProc("UnregisterClassW")
 	pUpdateWindow          = u32.NewProc("UpdateWindow")
+
+	intChanForNativeLoop = make(chan int, 1)
 )
 
 // Contains window class information.
@@ -262,7 +264,7 @@ func (t *winTray) setInfo(appName string, text string, title string, timeout uin
 	copy(t.nid.InfoTitle[:], titl[:])
 	t.nid.Flags = NIF_INFO
 	t.nid.InfoFlags = notificationType
-        t.nid.TimeoutOrVersion = timeout
+	t.nid.TimeoutOrVersion = timeout
 	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
 
 	return t.nid.modify()
@@ -822,6 +824,8 @@ func nativeLoop() {
 			return
 		case 0:
 			return
+		case <-intChanForNativeLoop:
+			return
 		default:
 			pTranslateMessage.Call(uintptr(unsafe.Pointer(m)))
 			pDispatchMessage.Call(uintptr(unsafe.Pointer(m)))
@@ -830,14 +834,14 @@ func nativeLoop() {
 }
 
 func quit() {
-	const WM_CLOSE = 0x0010
-
-	pPostMessage.Call(
-		uintptr(wt.window),
-		WM_CLOSE,
-		0,
-		0,
-	)
+	intChanForNativeLoop <- 1
+	//const WM_CLOSE = 0x0010
+	//pPostMessage.Call(
+	//	uintptr(wt.window),
+	//	WM_CLOSE,
+	//	0,
+	//	0,
+	//)
 }
 
 func iconBytesToFilePath(iconBytes []byte) (string, error) {
@@ -986,8 +990,8 @@ func clean() {
 		)
 	}
 	for id := range wt.menus {
-	    if id != 0 {
-	    	delete(wt.menus, id)
+		if id != 0 {
+			delete(wt.menus, id)
 		}
 	}
 	wt.menuOf = make(map[uint32]windows.Handle)
